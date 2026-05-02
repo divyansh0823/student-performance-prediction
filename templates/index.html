@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduPredict | AI Performance Analytics</title>
+    <meta name="description" content="EduPredict uses AI to predict student academic outcomes based on study habits, attendance, and sleep patterns.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --primary: #7c3aed;
+            --primary-light: #a78bfa;
+            --primary-dark: #5b21b6;
+            --accent: #06b6d4;
+            --accent2: #f59e0b;
+            --surface: rgba(15, 10, 40, 0.78);
+            --border: rgba(124, 58, 237, 0.28);
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --success: #10b981;
+            --warn: #f59e0b;
+            --danger: #ef4444;
+            --glow: 0 0 50px rgba(124, 58, 237, 0.35);
+        }
+
+        html, body {
+            min-height: 100vh;
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            background: #06000f;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2.5rem 1rem;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* ── Background ── */
+        .bg-scene {
+            position: fixed; inset: 0; z-index: 0;
+            pointer-events: none; overflow: hidden;
+        }
+        .bg-mesh {
+            position: absolute; inset: 0;
+            background:
+                radial-gradient(ellipse 80% 60% at 20% 20%, rgba(124,58,237,0.20) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 50% at 80% 80%, rgba(6,182,212,0.13) 0%, transparent 60%),
+                radial-gradient(ellipse 50% 40% at 50% 50%, rgba(245,158,11,0.05) 0%, transparent 70%);
+        }
+        .orb {
+            position: absolute; border-radius: 50%;
+            filter: blur(80px); animation: floatOrb 12s ease-in-out infinite;
+        }
+        .orb-1 { width:520px;height:520px; background:radial-gradient(circle,rgba(124,58,237,0.22),transparent 70%); top:-160px;left:-110px; animation-delay:0s; }
+        .orb-2 { width:400px;height:400px; background:radial-gradient(circle,rgba(6,182,212,0.16),transparent 70%); bottom:-100px;right:-80px; animation-delay:-5s; }
+        .orb-3 { width:280px;height:280px; background:radial-gradient(circle,rgba(245,158,11,0.10),transparent 70%); top:40%;left:60%; animation-delay:-3s; animation-duration:16s; }
+        @keyframes floatOrb {
+            0%,100% { transform:translate(0,0) scale(1); }
+            33%      { transform:translate(30px,-40px) scale(1.05); }
+            66%      { transform:translate(-20px,30px) scale(0.95); }
+        }
+        .grid-lines {
+            position:absolute; inset:0;
+            background-image:
+                linear-gradient(rgba(124,58,237,0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(124,58,237,0.04) 1px, transparent 1px);
+            background-size: 60px 60px;
+        }
+
+        /* ── Particles ── */
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            animation: particleDrift linear infinite;
+            opacity: 0;
+        }
+        @keyframes particleDrift {
+            0%   { transform: translateY(100vh) scale(0); opacity: 0; }
+            10%  { opacity: 0.6; }
+            90%  { opacity: 0.3; }
+            100% { transform: translateY(-10vh) scale(1.2); opacity: 0; }
+        }
+
+        /* ── Card ── */
+        .card {
+            position: relative; z-index: 1;
+            width: 100%; max-width: 540px;
+            background: var(--surface);
+            backdrop-filter: blur(28px) saturate(200%);
+            -webkit-backdrop-filter: blur(28px) saturate(200%);
+            border: 1px solid var(--border);
+            border-radius: 2rem;
+            padding: 2.75rem 2.5rem;
+            box-shadow:
+                0 0 0 1px rgba(255,255,255,0.05) inset,
+                0 32px 80px -16px rgba(0,0,0,0.75),
+                var(--glow);
+            animation: cardIn 0.7s cubic-bezier(0.22,1,0.36,1) both;
+        }
+        @keyframes cardIn {
+            from { opacity:0; transform:translateY(36px) scale(0.96); }
+            to   { opacity:1; transform:translateY(0) scale(1); }
+        }
+        .card::before {
+            content:''; position:absolute;
+            top:0; left:10%; right:10%; height:1px;
+            background:linear-gradient(90deg,transparent,rgba(167,139,250,0.7),transparent);
+        }
+
+        /* ── Badge ── */
+        .badge {
+            display: inline-flex; align-items: center; gap: 0.45rem;
+            background: rgba(124,58,237,0.15);
+            border: 1px solid rgba(124,58,237,0.35);
+            border-radius: 999px;
+            padding: 0.3rem 0.85rem;
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--primary-light);
+            margin-bottom: 1rem;
+        }
+        .badge-dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: var(--success);
+            box-shadow: 0 0 6px var(--success);
+            animation: blink 2s ease-in-out infinite;
+        }
+        @keyframes blink {
+            0%,100% { opacity:1; } 50% { opacity:0.3; }
+        }
+
+        /* ── Header ── */
+        .header { text-align: center; margin-bottom: 2rem; }
+        .logo-ring {
+            width: 76px; height: 76px;
+            margin: 0 auto 1.25rem;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 0 0 10px rgba(124,58,237,0.10), 0 0 35px rgba(124,58,237,0.45);
+            animation: pulseLogo 3s ease-in-out infinite;
+        }
+        @keyframes pulseLogo {
+            0%,100% { box-shadow:0 0 0 10px rgba(124,58,237,0.10),0 0 35px rgba(124,58,237,0.45); }
+            50%      { box-shadow:0 0 0 16px rgba(124,58,237,0.07),0 0 55px rgba(124,58,237,0.65); }
+        }
+        .logo-ring i { font-size:1.8rem; color:#fff; }
+
+        .card h1 {
+            font-size: 2.1rem; font-weight: 800;
+            color: var(--text-primary);
+            letter-spacing: -0.03em; line-height: 1.1;
+        }
+        .card h1 span {
+            background: linear-gradient(135deg, var(--primary-light), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .subtitle {
+            margin-top: 0.5rem;
+            font-size: 0.88rem;
+            color: var(--text-secondary);
+        }
+
+        /* ── Divider ── */
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(124,58,237,0.25), transparent);
+            margin: 1.5rem 0;
+        }
+
+        /* ── Form ── */
+        form { display:flex; flex-direction:column; gap:1.15rem; }
+        .field-group { display:flex; flex-direction:column; gap:0.45rem; }
+
+        label {
+            font-size: 0.78rem; font-weight: 600;
+            color: var(--text-secondary);
+            letter-spacing: 0.07em;
+            text-transform: uppercase;
+            display: flex; align-items: center; gap: 0.5rem;
+        }
+        label i { color: var(--primary-light); font-size: 0.82rem; }
+
+        .input-wrap { position: relative; }
+        .input-hint {
+            position: absolute; right: 1rem; top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.72rem; color: var(--text-muted);
+            pointer-events: none;
+            font-weight: 500;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 0.9rem 3.5rem 0.9rem 1.1rem;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(124,58,237,0.22);
+            border-radius: 0.875rem;
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            outline: none;
+            transition: border-color 0.25s, background 0.25s, box-shadow 0.25s;
+            -moz-appearance: textfield;
+        }
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button { -webkit-appearance:none; }
+        input[type="number"]::placeholder { color:var(--text-muted); font-weight:400; }
+        input[type="number"]:focus {
+            border-color: var(--primary);
+            background: rgba(124,58,237,0.07);
+            box-shadow: 0 0 0 3px rgba(124,58,237,0.16);
+        }
+        input[type="number"]:hover:not(:focus) { border-color:rgba(124,58,237,0.42); }
+
+        /* ── Stats Row ── */
+        .stats-row {
+            display: grid; grid-template-columns: repeat(3,1fr);
+            gap: 0.75rem; margin-bottom: 0.25rem;
+        }
+        .stat-chip {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 0.875rem;
+            padding: 0.65rem 0.5rem;
+            text-align: center;
+        }
+        .stat-chip .val {
+            font-size: 1.05rem; font-weight: 800;
+            background: linear-gradient(135deg, var(--primary-light), var(--accent));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .stat-chip .lbl {
+            font-size: 0.62rem; color: var(--text-muted);
+            font-weight: 500; letter-spacing: 0.05em;
+            text-transform: uppercase; margin-top: 0.2rem;
+        }
+
+        /* ── Button ── */
+        .btn-predict {
+            margin-top: 0.5rem; width: 100%;
+            padding: 1rem 1.5rem;
+            background: linear-gradient(135deg, var(--primary) 0%, #6d28d9 50%, var(--primary-dark) 100%);
+            background-size: 200% 200%;
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem; font-weight: 700;
+            letter-spacing: 0.03em;
+            border: none; border-radius: 0.875rem;
+            cursor: pointer; position: relative; overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.25s, background-position 0.5s;
+            box-shadow: 0 4px 24px rgba(124,58,237,0.45);
+        }
+        .btn-predict::before {
+            content:''; position:absolute;
+            top:0; left:-100%; width:100%; height:100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.14), transparent);
+            transition: left 0.5s;
+        }
+        .btn-predict:hover { transform:translateY(-2px); box-shadow:0 10px 36px rgba(124,58,237,0.6); background-position:right center; }
+        .btn-predict:hover::before { left:100%; }
+        .btn-predict:active { transform:translateY(0) scale(0.98); }
+        .btn-predict.loading { pointer-events:none; opacity:0.8; }
+        .btn-predict .btn-icon { margin-right:0.5rem; }
+        .btn-predict .spinner { display:none; animation:spin 0.8s linear infinite; }
+        .btn-predict.loading .btn-text { display:none; }
+        .btn-predict.loading .spinner { display:inline-block; }
+
+        @keyframes spin { from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
+
+        /* ── Result Card ── */
+        .result-card {
+            margin-top: 1.75rem; padding: 1.5rem;
+            border-radius: 1.25rem;
+            position: relative; overflow: hidden;
+            animation: resultIn 0.6s cubic-bezier(0.22,1,0.36,1) both;
+        }
+        .result-card.grade-a {
+            background: linear-gradient(135deg, rgba(16,185,129,0.10), rgba(6,182,212,0.06));
+            border: 1px solid rgba(16,185,129,0.35);
+        }
+        .result-card.grade-b {
+            background: linear-gradient(135deg, rgba(6,182,212,0.10), rgba(124,58,237,0.06));
+            border: 1px solid rgba(6,182,212,0.35);
+        }
+        .result-card.grade-c {
+            background: linear-gradient(135deg, rgba(245,158,11,0.10), rgba(124,58,237,0.06));
+            border: 1px solid rgba(245,158,11,0.35);
+        }
+        .result-card.grade-f {
+            background: linear-gradient(135deg, rgba(239,68,68,0.10), rgba(124,58,237,0.06));
+            border: 1px solid rgba(239,68,68,0.35);
+        }
+        @keyframes resultIn {
+            from { opacity:0; transform:translateY(20px) scale(0.97); }
+            to   { opacity:1; transform:translateY(0) scale(1); }
+        }
+        .result-card::before {
+            content:''; position:absolute;
+            top:0; left:0; right:0; height:2px;
+        }
+        .grade-a::before { background:linear-gradient(90deg,var(--success),var(--accent)); }
+        .grade-b::before { background:linear-gradient(90deg,var(--accent),var(--primary-light)); }
+        .grade-c::before { background:linear-gradient(90deg,var(--accent2),var(--accent)); }
+        .grade-f::before { background:linear-gradient(90deg,var(--danger),var(--accent2)); }
+
+        .result-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:0.75rem; }
+        .result-label {
+            font-size:0.7rem; font-weight:700;
+            letter-spacing:0.12em; text-transform:uppercase;
+            color:var(--success);
+            display:flex; align-items:center; gap:0.4rem;
+        }
+        .result-label i { animation:spin 4s linear infinite; }
+        .result-grade-badge {
+            font-size:0.7rem; font-weight:800;
+            letter-spacing:0.1em; text-transform:uppercase;
+            padding:0.2rem 0.65rem; border-radius:999px;
+        }
+        .grade-a .result-grade-badge { background:rgba(16,185,129,0.2); color:var(--success); }
+        .grade-b .result-grade-badge { background:rgba(6,182,212,0.2); color:var(--accent); }
+        .grade-c .result-grade-badge { background:rgba(245,158,11,0.2); color:var(--accent2); }
+        .grade-f .result-grade-badge { background:rgba(239,68,68,0.2); color:var(--danger); }
+
+        .result-score-row { display:flex; align-items:flex-end; gap:0.75rem; }
+        .result-value {
+            font-size:2.2rem; font-weight:900;
+            color:var(--text-primary);
+            letter-spacing:-0.03em; line-height:1;
+        }
+        .result-sublabel {
+            font-size:0.78rem; color:var(--text-muted);
+            font-weight:500; margin-bottom:0.15rem;
+        }
+        .result-bar-wrap {
+            margin-top:0.9rem;
+            background:rgba(255,255,255,0.06);
+            border-radius:999px; height:6px; overflow:hidden;
+        }
+        .result-bar {
+            height:100%; border-radius:999px;
+            transition: width 1s cubic-bezier(0.22,1,0.36,1);
+        }
+        .grade-a .result-bar { background:linear-gradient(90deg,var(--success),var(--accent)); }
+        .grade-b .result-bar { background:linear-gradient(90deg,var(--accent),var(--primary-light)); }
+        .grade-c .result-bar { background:linear-gradient(90deg,var(--accent2),var(--accent)); }
+        .grade-f .result-bar { background:linear-gradient(90deg,var(--danger),var(--accent2)); }
+
+        .result-glow {
+            position:absolute; bottom:-20px; right:-20px;
+            width:130px; height:130px; border-radius:50%;
+            background:radial-gradient(circle,rgba(16,185,129,0.12),transparent 70%);
+        }
+
+        /* ── Error Card ── */
+        .error-card {
+            margin-top: 1.5rem; padding: 1rem 1.25rem;
+            background: rgba(239,68,68,0.08);
+            border: 1px solid rgba(239,68,68,0.3);
+            border-radius: 1rem;
+            color: #fca5a5;
+            font-size: 0.875rem; font-weight: 500;
+            display: flex; align-items: center; gap: 0.6rem;
+        }
+
+        /* ── Footer ── */
+        .footer {
+            margin-top: 2rem; padding-top: 1.25rem;
+            border-top: 1px solid rgba(255,255,255,0.06);
+            text-align: center;
+            font-size: 0.68rem; font-weight: 600;
+            letter-spacing: 0.12em; text-transform: uppercase;
+            color: var(--text-muted);
+        }
+        .footer span { color: var(--primary-light); }
+
+        /* ── Responsive ── */
+        @media (max-width: 480px) {
+            .card { padding:2rem 1.4rem; border-radius:1.5rem; }
+            .card h1 { font-size:1.7rem; }
+            .stats-row { grid-template-columns:1fr; gap:0.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Animated background -->
+    <div class="bg-scene" aria-hidden="true">
+        <div class="bg-mesh"></div>
+        <div class="grid-lines"></div>
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+
+    <div class="card">
+
+        <!-- Header -->
+        <div class="header">
+            <div class="badge">
+                <span class="badge-dot"></span> AI-Powered Analytics
+            </div>
+            <div class="logo-ring">
+                <i class="fas fa-graduation-cap"></i>
+            </div>
+            <h1>Edu<span>Predict</span> AI</h1>
+            <p class="subtitle">Enter student metrics to predict academic outcomes</p>
+        </div>
+
+        <!-- Quick-stats chips -->
+        <div class="stats-row">
+            <div class="stat-chip">
+                <div class="val">98%</div>
+                <div class="lbl">Accuracy</div>
+            </div>
+            <div class="stat-chip">
+                <div class="val">3</div>
+                <div class="lbl">Features</div>
+            </div>
+            <div class="stat-chip">
+                <div class="val">ML</div>
+                <div class="lbl">Powered</div>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Form -->
+        <form action="/predict" method="POST" id="predict-form">
+
+            <div class="field-group">
+                <label for="hours_studied">
+                    <i class="fas fa-book-reader"></i> Study Hours (Daily)
+                </label>
+                <div class="input-wrap">
+                    <input type="number" step="0.1" id="hours_studied" name="hours_studied"
+                        placeholder="e.g. 6.5" min="0" max="24" required>
+                    <span class="input-hint">0 – 24 h</span>
+                </div>
+            </div>
+
+            <div class="field-group">
+                <label for="attendance">
+                    <i class="fas fa-user-check"></i> Attendance Percentage
+                </label>
+                <div class="input-wrap">
+                    <input type="number" id="attendance" name="attendance"
+                        placeholder="0 – 100" min="0" max="100" required>
+                    <span class="input-hint">%</span>
+                </div>
+            </div>
+
+            <div class="field-group">
+                <label for="sleep">
+                    <i class="fas fa-bed"></i> Sleep Duration (Hours)
+                </label>
+                <div class="input-wrap">
+                    <input type="number" step="0.1" id="sleep" name="sleep"
+                        placeholder="e.g. 7.5" min="0" max="24" required>
+                    <span class="input-hint">0 – 24 h</span>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-predict" id="predict-btn">
+                <span class="btn-text">
+                    <i class="fas fa-brain btn-icon"></i>Generate Prediction
+                </span>
+                <i class="fas fa-circle-notch spinner btn-icon"></i>
+                <span class="btn-text loading-text" style="display:none;">Analysing…</span>
+            </button>
+
+        </form>
+
+        <!-- Prediction result (Flask / Jinja2) -->
+        {% if prediction_text %}
+        {% set score_raw = prediction_text | replace('Predicted Student Score: ', '') | float(default=0) %}
+        {% if score_raw >= 75 %}
+          {% set grade = 'a' %}{% set grade_label = 'Excellent' %}
+        {% elif score_raw >= 55 %}
+          {% set grade = 'b' %}{% set grade_label = 'Good' %}
+        {% elif score_raw >= 35 %}
+          {% set grade = 'c' %}{% set grade_label = 'Average' %}
+        {% else %}
+          {% set grade = 'f' %}{% set grade_label = 'Needs Work' %}
+        {% endif %}
+        <div class="result-card grade-{{ grade }}" id="result-card">
+            <div class="result-top">
+                <div class="result-label">
+                    <i class="fas fa-circle-notch"></i> AI Result
+                </div>
+                <span class="result-grade-badge">{{ grade_label }}</span>
+            </div>
+            <div class="result-score-row">
+                <div class="result-value">{{ score_raw }}</div>
+                <div class="result-sublabel">/ 100 pts</div>
+            </div>
+            <div class="result-bar-wrap">
+                <div class="result-bar" id="score-bar" style="width: 0%"></div>
+            </div>
+            <div class="result-glow"></div>
+        </div>
+        <script>
+            setTimeout(function(){
+                document.getElementById('score-bar').style.width = '{{ [score_raw, 100] | min }}%';
+            }, 100);
+        </script>
+        {% endif %}
+
+        {% if error %}
+        <div class="error-card">
+            <i class="fas fa-exclamation-triangle"></i>
+            {{ error }}
+        </div>
+        {% endif %}
+
+        <!-- Footer -->
+        <div class="footer">
+            Powered by <span>Scikit-Learn</span> &amp; <span>Flask</span>
+        </div>
+
+    </div>
+
+    <script>
+        // Loading state on submit
+        document.getElementById('predict-form').addEventListener('submit', function() {
+            var btn = document.getElementById('predict-btn');
+            btn.classList.add('loading');
+        });
+
+        // Floating particles
+        (function(){
+            var scene = document.querySelector('.bg-scene');
+            var colors = ['rgba(124,58,237,0.5)','rgba(6,182,212,0.5)','rgba(167,139,250,0.5)'];
+            for(var i=0;i<18;i++){
+                var p = document.createElement('div');
+                p.className='particle';
+                var s = Math.random()*4+2;
+                p.style.cssText = [
+                    'width:'+s+'px','height:'+s+'px',
+                    'left:'+(Math.random()*100)+'%',
+                    'background:'+colors[Math.floor(Math.random()*colors.length)],
+                    'animation-duration:'+(Math.random()*18+10)+'s',
+                    'animation-delay:'+(Math.random()*12)+'s'
+                ].join(';');
+                scene.appendChild(p);
+            }
+        })();
+    </script>
+</body>
+</html>
