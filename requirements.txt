@@ -1,7 +1,7 @@
+streamlit
 pandas
 numpy
 seaborn
 matplotlib
 scikit-learn
-flask
 dill
