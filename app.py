@@ -1,12 +1,4 @@
 import streamlit as st
-st.markdown("""
-<style>
-.stApp {
-    background: linear-gradient(to right, #667eea, #764ba2);
-    color: white;
-}
-</style>
-""", unsafe_allow_html=True)
 import numpy as np
 import pickle
 
