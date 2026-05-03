@@ -1,11 +1,12 @@
-from flask import Flask, request, render_template
+import streamlit as st
+
+st.title("Student Performance Prediction")
 import numpy as np
 import pickle
 import os
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-app = Flask(__name__)
 
 # Load the trained model
 model = pickle.load(open('model.pkl', 'rb'))
